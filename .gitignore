@@ -2,6 +2,13 @@
 __pycache__/
 *.py[cod]
 *$py.class
+Study/
+.idea/
+screenshots/
+logs/
+
+# allure
+allure-report
 
 # C extensions
 *.so
