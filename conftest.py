@@ -12,6 +12,7 @@ from pages.login import LoginPage
 from pages.login_admin import LoginAdminPage
 from pages.products_table import ProductsTablePage
 from pages.upload_file_mozilla_page import UploadFileMozillaPage
+import mysql.connector as db_api
 
 
 logging.basicConfig(format='%(levelname)s::%(filename)s::%(funcName)s::%(message)s', filename="logs/selenium.log")
@@ -60,6 +61,26 @@ def browser(request):
 
     request.addfinalizer(fin)
     return driver
+
+
+@pytest.fixture(scope='session')
+def db_connect(request):
+    connect = db_api.connect(
+        host='localhost',
+        database='bitnami_opencart',
+        port=3306,
+        user='root',
+        password='bitnami'
+    )
+    cursor = connect.cursor()
+
+    def fin():
+        connect.commit()
+        cursor.close()
+        connect.close()
+
+    request.addfinalizer(fin)
+    return cursor
 
 
 @pytest.fixture()
