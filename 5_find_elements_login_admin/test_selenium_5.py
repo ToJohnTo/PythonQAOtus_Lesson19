@@ -25,45 +25,85 @@ def test_products_table(products_table_page):
     products_table_page.logger.info('====== Finished ======')
 
 
-def test_products_add_product(products_table_page):
+def test_products_add_product(products_table_page, db_connect):
     """ Check add product to products table """
     products_table_page.logger.info('====== Started ======')
     # Go to page products table (General page)
     test_products_table(products_table_page)
     # Add new product
-    products_table_page.add_new_product(name="ex_name_1", tag="ex_tag_1", model="ex_model_1")
-    assert \
-        products_table_page.driver.find_element_by_css_selector(".alert.alert-success.alert-dismissible").get_property("innerText")\
-        == \
-        " Success: You have modified products!\n×"
+    name = "ex_name_1"
+    tag = "ex_tag_1"
+    model = "ex_model_1"
+    products_table_page.add_new_product(name=name, tag=tag, model=model)
+    # Check that new product added
+    query = f"""
+        SELECT oc_product_description.name, oc_product_description.meta_title, oc_product.model
+        FROM oc_product_description, oc_product
+        WHERE oc_product_description.name=\"{name}\"
+            AND oc_product_description.meta_title=\"{tag}\"
+            AND oc_product.model=\"{model}\"
+    """
+    db_connect.execute(query)
+    result = db_connect.fetchall()
+    products_table_page.logger.info(result)
+    ids = [i[0] for i in result]
+    products_table_page.logger.info(ids)
+    assert len(ids) != 0, 'Добавление произведено успешно'
     products_table_page.logger.info('====== Finished ======')
 
 
-def test_products_modify_product(products_table_page):
+def test_products_remove_product(products_table_page, db_connect):
+    """ Check remove product from products table """
+    products_table_page.logger.info('====== Started ======')
+    data1 = (666, 1, 'ex_name_1', 'ex_tag_1')
+    data2 = (666, 'ex_model_1')
+    ins1 = f"INSERT INTO oc_product_description (product_id, language_id, name, meta_title) VALUES {data1}"
+    ins2 = f"INSERT INTO oc_product (product_id, model) VALUES {data2}"
+    db_connect.execute(ins1)
+    db_connect.execute(ins2)
+    # Remove product
+    name = "new_name_1"
+    products_table_page.remove_product_with(name=name)
+    # Check that product removed
+    query = f"""
+        SELECT *
+        FROM oc_product_description
+        WHERE name=\"{name}\"
+    """
+    db_connect.execute(query)
+    result = db_connect.fetchall()
+    products_table_page.logger.info(result)
+    ids = [i[0] for i in result]
+    products_table_page.logger.info(ids)
+    assert len(ids) == 0, 'Удаление произведено успешно'
+    products_table_page.logger.info('====== Finished ======')
+
+
+def test_products_modify_product(products_table_page, db_connect):
     """ Check modify product in products table """
     products_table_page.logger.info('====== Started ======')
     # Prepare for test - add product
-    test_products_add_product(products_table_page)
+    data1 = (777, 1, 'ins_name_1', 'ins_tag_1')
+    data2 = (777, 'ins_model_1')
+    ins1 = f"INSERT INTO oc_product_description (product_id, language_id, name, meta_title) VALUES {data1}"
+    ins2 = f"INSERT INTO oc_product (product_id, model) VALUES {data2}"
+    db_connect.execute(ins1)
+    db_connect.execute(ins2)
     # Modify product
-    products_table_page.modify_product_name(new_name="1_new_ex_name_1")
-    assert \
-        products_table_page.driver.find_element_by_css_selector(".alert.alert-success.alert-dismissible").get_property("innerText") \
-        == \
-        " Success: You have modified products!\n×"
-    products_table_page.logger.info('====== Finished ======')
-
-
-def test_products_remove_product(products_table_page):
-    """ Check remove product from products table """
-    products_table_page.logger.info('====== Started ======')
-    # Prepare for test - add product
-    test_products_add_product(products_table_page)
-    # Remove product
-    products_table_page.remove_product_with(name="ex_name_1")
-    assert \
-        products_table_page.driver.find_element_by_css_selector(".alert.alert-success.alert-dismissible").get_property("innerText") \
-        == \
-        " Success: You have modified products!\n×"
+    new_name = "1_new_ex_name_1"
+    products_table_page.modify_product_name(new_name=new_name)
+    # Check that product modified
+    query = f"""
+        SELECT *
+        FROM oc_product_description
+        WHERE name=\"{new_name}\"
+    """
+    db_connect.execute(query)
+    result = db_connect.fetchall()
+    products_table_page.logger.info(result)
+    ids = [i[0] for i in result]
+    products_table_page.logger.info(ids)
+    assert len(ids) != 0, 'Модификация произведена успешно'
     products_table_page.logger.info('====== Finished ======')
 
 

@@ -9,3 +9,6 @@
 
 Критерии оценки: Оба пункта выполнены. \
 Результатом выполнения дз является ссылка на коммит и скриншот с примером использования.
+
+Helpful link:
+https://docs.bitnami.com/virtual-machine/infrastructure/mysql/administration/connect-remotely/
